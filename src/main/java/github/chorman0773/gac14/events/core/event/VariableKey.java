@@ -7,6 +7,7 @@ import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.loot.LootTable;
 
 import javax.annotation.Nonnull;
@@ -16,7 +17,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * Represents the name of a Typed Variable in an IEvent object.
  * This is a Value-based class. 
  * Use of identity senstitive operations, such as reference equality, identity hash code, or synchronization make have unpredictable results.
- * 
+ *
+ *
+ * Note that the type of the Variable is, by design, part of its name.
  * @author chorm
  *
  * @param <T>
@@ -25,11 +28,12 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class VariableKey<T> {
 	
-	private String name;
-	private Class<T> cl;
+	private final String name;
+	private final Class<T> cl;
 	
 	private VariableKey(String name,Class<T> cl) {
-		// TODO Auto-generated constructor stub
+		this.name = name;
+		this.cl = cl;
 	}
 	
 	public static <T> VariableKey<T> makeKey(String name, Class<T> cl){
@@ -59,11 +63,23 @@ public final class VariableKey<T> {
 	public static VariableKey<ITextComponent> makeTextKey(String name){
 		return new VariableKey<>(name,ITextComponent.class);
 	}
-	
-	public static interface CommonKeys{
+
+	/**
+	 * Contains a list of Well-known variable keys.
+	 * These keys should be used for there intended purpose.
+	 *
+	 * Consumers of the Gac14 Core API are permitted assume that these keys, and not custom keys, are used for there provided purpose.
+	 */
+	@SuppressWarnings("unused")
+	public static interface WellKnownKeys{
+		/**
+		 * Specifies the Readable event. If present, this key is used in an unspecified way when informing users about the event.
+		 */
 		VariableKey<ITextComponent> EventNameKey = makeTextKey("EventName");
 		VariableKey<Duration> DurationKey = makeKey("Duration",Duration.class);
 		VariableKey<LootTable> RewardKey = makeKey("Reward",LootTable.class);
+		VariableKey<Vec3d> EventLocationKey = makePositionKey("EventLocation");
+		VariableKey<ServerWorld> EventWorldKey = makeKey("EventWorld",ServerWorld.class);
 	}
 	
 	public Class<T> getType(){
